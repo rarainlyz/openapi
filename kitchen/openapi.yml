@@ -1,0 +1,156 @@
+openapi: 3.0.3
+info:
+  title: Kitchen Menu API
+  description: สัญญาเมนูของครัว สำหรับทีมหน้าร้าน React
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /menu:
+    get:
+      summary: ขอดูเมนูทั้งหมด หรือกรองตามประเภท
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+          example: pizza
+      responses:
+        "200":
+          description: รายการเมนู
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Menu"
+    post:
+      summary: สั่งทำจานใหม่
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewMenu"
+      responses:
+        "201":
+          description: จานใหม่ทำเสร็จแล้ว
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Menu"
+        "400":
+          description: ใบสั่งเพี้ยน หรือของไม่ครบ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: MISSING_FIELD
+                  message: ใบสั่งขาด name หรือ price
+  /menu/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        example: 2
+    get:
+      summary: ขอดูจานเดียวตามหมายเลข
+      responses:
+        "200":
+          description: จานที่ขอ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Menu"
+        "400":
+          description: เลขจานไม่ใช่ตัวเลข
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: BAD_ID
+                  message: เลขจานต้องเป็นตัวเลข
+        "404":
+          description: ไม่พบจานหมายเลขนี้
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: MENU_NOT_FOUND
+                  message: ไม่พบเมนูหมายเลขนี้
+    delete:
+      summary: ลบจานตามหมายเลข
+      responses:
+        "204":
+          description: ลบสำเร็จ ไม่มีเนื้อหา
+        "400":
+          description: เลขจานไม่ถูกต้อง
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: BAD_ID
+                  message: เลขจานต้องเป็นตัวเลข
+        "404":
+          description: ไม่พบเมนูเพื่อจะลบ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error:
+                  code: MENU_NOT_FOUND
+                  message: ไม่พบเมนูหมายเลขนี้
+components:
+  schemas:
+    Menu:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: พิซซ่าฮาวายเอี้ยน
+        price:
+          type: number
+          example: 199
+        type:
+          type: string
+          example: pizza
+    NewMenu:
+      type: object
+      required: [name, price]
+      properties:
+        name:
+          type: string
+          example: ข้าวผัดปู
+        price:
+          type: number
+          example: 90
+        type:
+          type: string
+          example: rice
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: MENU_NOT_FOUND
+            message:
+              type: string
+              example: ไม่พบเมนูหมายเลขนี้
